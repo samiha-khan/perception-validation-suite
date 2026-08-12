@@ -1,5 +1,7 @@
 # perception-validation-suite
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 Checks whether an image classifier can be trusted before it ships: does it know what it doesn't know, is its confidence honest, and how badly does it break under bad conditions. Built and tested on a real model, not simulated.
 
 Validation and monitoring toolkit for a perception model: OOD detection, uncertainty calibration, corruption robustness, CI-gated release checks. ResNet18 fine-tuned on GTSRB traffic signs.
