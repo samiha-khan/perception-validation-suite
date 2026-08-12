@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Perception Validation Report</title>
+<style>
+  :root {
+    --paper: #f2f4f8;
+    --panel: #ffffff;
+    --panel-raised: #fbfcfe;
+    --ink: #131722;
+    --muted: #5a6376;
+    --line: #e1e5ee;
+    --line-strong: #c9d0de;
+    --accent: #2456c9;
+    --accent-ink: #ffffff;
+    --go: #157a45;
+    --go-bg: #e2f6ea;
+    --stop: #b3312f;
+    --stop-bg: #fbe6e5;
+    --warn: #9a5b0a;
+    --warn-bg: #fbedd8;
+    --shadow: 0 1px 2px rgba(20, 24, 38, 0.04), 0 8px 24px -12px rgba(20, 24, 38, 0.12);
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "SF Mono", "IBM Plex Mono", ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0d1017;
+      --panel: #161b26;
+      --panel-raised: #1b2130;
+      --ink: #e8ebf2;
+      --muted: #8b93a7;
+      --line: #262d3d;
+      --line-strong: #333c50;
+      --accent: #6a95f2;
+      --accent-ink: #0d1017;
+      --go: #3fc17f;
+      --go-bg: #123322;
+      --stop: #f2726f;
+      --stop-bg: #3a1a1c;
+      --warn: #e5a33e;
+      --warn-bg: #3a2c12;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0d1017; --panel: #161b26; --panel-raised: #1b2130; --ink: #e8ebf2;
+    --muted: #8b93a7; --line: #262d3d; --line-strong: #333c50;
+    --accent: #6a95f2; --accent-ink: #0d1017;
+    --go: #3fc17f; --go-bg: #123322; --stop: #f2726f; --stop-bg: #3a1a1c;
+    --warn: #e5a33e; --warn-bg: #3a2c12;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  }
+  :root[data-theme="light"] {
+    --paper: #f2f4f8; --panel: #ffffff; --panel-raised: #fbfcfe; --ink: #131722;
+    --muted: #5a6376; --line: #e1e5ee; --line-strong: #c9d0de;
+    --accent: #2456c9; --accent-ink: #ffffff;
+    --go: #157a45; --go-bg: #e2f6ea; --stop: #b3312f; --stop-bg: #fbe6e5;
+    --warn: #9a5b0a; --warn-bg: #fbedd8;
+    --shadow: 0 1px 2px rgba(20, 24, 38, 0.04), 0 8px 24px -12px rgba(20, 24, 38, 0.12);
+  }
+
+  * { box-sizing: border-box; }
+  html { color-scheme: light dark; }
+  body {
+    font-family: var(--font-ui);
+    background: var(--paper); color: var(--ink); margin: 0;
+    padding: 2.5rem 1.5rem 4rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+  .page { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.25rem; }
+
+  /* ---- Header / status rail ---- */
+  .rail {
+    display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+    flex-wrap: wrap;
+    padding-bottom: 1.25rem; border-bottom: 1px solid var(--line);
+  }
+  .rail-id { display: flex; flex-direction: column; gap: 0.2rem; }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  h1 { font-size: 1.5rem; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+  .verdict {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: var(--font-mono); font-weight: 600; font-size: 0.85rem;
+    padding: 0.5rem 0.9rem; border-radius: 8px; white-space: nowrap;
+  }
+  .verdict.pass { background: var(--go-bg); color: var(--go); }
+  .verdict.fail { background: var(--stop-bg); color: var(--stop); }
+  .verdict .dot { width: 0.55rem; height: 0.55rem; border-radius: 50%; background: currentColor; }
+
+  /* ---- Panels ---- */
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 1.5rem 1.6rem; box-shadow: var(--shadow);
+  }
+  .panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
+  .panel-head h2 { font-size: 1.05rem; margin: 0; letter-spacing: -0.005em; }
+  .panel-note { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+
+  /* ---- Gate ledger ---- */
+  .ledger { display: flex; flex-direction: column; }
+  .ledger-row {
+    display: grid; grid-template-columns: 1.4fr 1fr 1fr auto;
+    align-items: center; gap: 1rem; padding: 0.65rem 0.25rem;
+    border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: 0.85rem;
+  }
+  .ledger-row:last-child { border-bottom: none; }
+  .ledger-row .name { font-family: var(--font-ui); font-size: 0.9rem; }
+  .ledger-row .value, .ledger-row .rule { font-variant-numeric: tabular-nums; color: var(--muted); }
+  .status-chip {
+    display: inline-flex; align-items: center; gap: 0.4rem; justify-self: end;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 999px;
+  }
+  .status-chip.pass { background: var(--go-bg); color: var(--go); }
+  .status-chip.fail { background: var(--stop-bg); color: var(--stop); }
+  .status-chip .dot { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: currentColor; }
+
+  /* ---- Generic tables ---- */
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--line); }
+  th {
+    color: var(--muted); font-weight: 600; font-size: 0.7rem; text-transform: uppercase;
+    letter-spacing: 0.06em; font-family: var(--font-mono);
+  }
+  td.num, th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  .table-wrap { overflow-x: auto; }
+
+  .grid-2 { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.75rem; align-items: start; }
+  img.plot { width: 100%; border-radius: 10px; border: 1px solid var(--line); display: block; background: var(--panel-raised); }
+
+  /* ---- Stat tiles ---- */
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.9rem; }
+  .stat {
+    background: var(--panel-raised); border: 1px solid var(--line); border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+  }
+  .stat .value {
+    font-family: var(--font-mono); font-size: 1.3rem; font-weight: 600;
+    font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+  }
+  .stat .label { color: var(--muted); font-size: 0.72rem; margin-top: 0.15rem; }
+
+  /* ---- Robustness severity ---- */
+  .sev { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .sev .dot { width: 0.55rem; height: 0.55rem; border-radius: 50%; flex: none; }
+  .sev.low .dot { background: var(--go); }
+  .sev.mid .dot { background: var(--warn); }
+  .sev.high .dot { background: var(--stop); }
+  .sev.low .amt { color: var(--muted); }
+  .sev.mid .amt { color: var(--warn); }
+  .sev.high .amt { color: var(--stop); font-weight: 600; }
+
+  footer {
+    color: var(--muted); font-size: 0.78rem; text-align: center; margin-top: 1rem;
+    font-family: var(--font-mono);
+  }
+
+  @media (max-width: 760px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .ledger-row { grid-template-columns: 1fr; row-gap: 0.25rem; }
+    .status-chip { justify-self: start; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="rail">
+    <div class="rail-id">
+      <span class="eyebrow">Perception Validation Suite &middot; run report</span>
+      <h1>GTSRB Traffic-Sign Classifier</h1>
+      <span class="panel-note">generated {{ generated_at }}</span>
+    </div>
+    <div class="verdict {{ 'pass' if overall_pass else 'fail' }}">
+      <span class="dot"></span>
+      {{ 'ALL GATE CHECKS PASSED' if overall_pass else 'GATE FAILED &mdash; BUILD BLOCKED' }}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>CI Gate Checks</h2>
+      <span class="panel-note">config.yaml &middot; thresholds</span>
+    </div>
+    <div class="ledger">
+      {% for c in checks %}
+      <div class="ledger-row">
+        <span class="name">{{ c.name }}</span>
+        <span class="value">{{ "%.4f"|format(c.value) }}</span>
+        <span class="rule">{{ c.op }} {{ "%.4f"|format(c.threshold) }}</span>
+        <span class="status-chip {{ 'pass' if c.passed else 'fail' }}"><span class="dot"></span>{{ 'PASS' if c.passed else 'FAIL' }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Stage 1 &middot; Out-of-Distribution Detection</h2>
+      <span class="panel-note">{{ ood_results.in_distribution }} (n={{ ood_results.n_id }}) vs {{ ood_results.out_of_distribution }} (n={{ ood_results.n_ood }})</span>
+    </div>
+    <div class="grid-2">
+      <div style="display:flex; flex-direction:column; gap:1rem;">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Detector</th><th class="num">AUROC</th><th class="num">AUPR</th></tr></thead>
+            <tbody>
+              {% for name, d in ood_results.detectors.items() %}
+              <tr><td>{{ name }}</td><td class="num">{{ "%.4f"|format(d.auroc) }}</td><td class="num">{{ "%.4f"|format(d.aupr) }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="stat-row">
+          <div class="stat"><div class="value">{{ "%.4f"|format(ood_results.avg_auroc) }}</div><div class="label">avg AUROC</div></div>
+        </div>
+      </div>
+      <img class="plot" src="data:image/png;base64,{{ roc_b64 }}" alt="OOD ROC curve">
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Stage 2 &middot; Calibration</h2>
+      <span class="panel-note">temperature scaling + split conformal</span>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="value">{{ "%.4f"|format(calib_results.temperature) }}</div><div class="label">temperature T</div></div>
+      <div class="stat"><div class="value">{{ "%.4f"|format(calib_results.ece_raw) }}</div><div class="label">ECE (raw)</div></div>
+      <div class="stat"><div class="value">{{ "%.4f"|format(calib_results.ece_calibrated) }}</div><div class="label">ECE (calibrated)</div></div>
+      <div class="stat"><div class="value">{{ "%.1f%%"|format(calib_results.conformal.target_coverage * 100) }}</div><div class="label">target coverage</div></div>
+      <div class="stat"><div class="value">{{ "%.1f%%"|format(calib_results.conformal.empirical_coverage * 100) }}</div><div class="label">empirical coverage</div></div>
+      <div class="stat"><div class="value">{{ "%.2f"|format(calib_results.conformal.avg_set_size) }}</div><div class="label">avg conformal set size</div></div>
+    </div>
+    <img class="plot" style="margin-top:1.1rem" src="data:image/png;base64,{{ reliability_b64 }}" alt="Reliability diagram">
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Stage 3 &middot; Corruption Robustness</h2>
+      <span class="panel-note">clean accuracy {{ "%.4f"|format(robustness_results.clean_accuracy) }}</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Corruption</th><th class="num">Severity</th><th class="num">Accuracy</th><th class="num">Degradation</th></tr></thead>
+        <tbody>
+          {% for row in robustness_results.rows %}
+          {% set mag = row.degradation %}
+          <tr>
+            <td>{{ row.corruption }}</td>
+            <td class="num">{{ row.severity }}</td>
+            <td class="num">{{ "%.4f"|format(row.accuracy) }}</td>
+            <td class="num">
+              <span class="sev {{ 'high' if mag > 0.10 else ('mid' if mag > 0.02 else 'low') }}">
+                <span class="dot"></span><span class="amt">{{ "%+.4f"|format(mag) }}</span>
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>perception-validation-suite &middot; single-run report, no historical trend data</footer>
+</div>
+</body>
+</html>

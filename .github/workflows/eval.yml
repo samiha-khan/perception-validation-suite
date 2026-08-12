@@ -1,0 +1,60 @@
+name: Perception Eval Suite
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Datasets + the fine-tuned checkpoint are expensive to (re)build, so
+      # they're cached and only rebuilt when model code or config changes.
+      - name: Cache datasets and model checkpoint
+        uses: actions/cache@v4
+        with:
+          path: |
+            data
+            models/checkpoints
+          key: gtsrb-${{ hashFiles('models/**/*.py', 'config.yaml') }}
+
+      - name: Run eval suite (OOD, calibration, robustness, gate)
+        run: python -m ci.run_eval_suite
+
+      - name: Generate HTML report
+        if: always()
+        run: python -m reports.generate_report
+
+      - name: Upload report + results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: |
+            reports/output/report.html
+            ood/results/*.json
+            calibration/results/*.json
+            calibration/results/*.png
+            robustness/results/*.json
+          retention-days: 30
