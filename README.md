@@ -61,7 +61,7 @@ Current run fails on the coverage check (gap 0.1811), correctly blocking the bui
 
 ## Report
 
-Running the report generator produces a single HTML summary of a given run, gate verdict, OOD ROC curve, calibration reliability diagrams, robustness table.
+Running the report generator produces a single HTML summary of a given run, gate verdict, OOD ROC curve, calibration reliability diagrams, robustness table. [View the full report](reports/output/report.html)
 
 ![report top](reports/output/report_top.png)
 ![report detail](reports/output/report_detail.png)
