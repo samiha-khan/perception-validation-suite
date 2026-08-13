@@ -37,6 +37,14 @@ GTSRB's train/test split is by physical sign track, not i.i.d. Calibration data 
 
 ECE checks confidence-accuracy match on one distribution. Conformal coverage checks whether a threshold generalizes to another distribution. A model can pass one and fail the other.
 
+## TensorFlow calibration cross-check
+
+calibration/temperature_scaling_tf.py reimplements temperature scaling fit and apply in TensorFlow, operating on the same saved val/test logits as the PyTorch pipeline, to check the calibration math isn't tied to one framework.
+
+PyTorch's LBFGS fit lands on T=1.245 (val NLL 0.003962). TensorFlow's gradient descent fit lands on T=0.699 (val NLL 0.001671), matching an independent scipy scalar optimization (T=0.699, val NLL 0.001671) almost exactly. PyTorch's own fit does not reach the true NLL optimum for this data.
+
+Despite finding the mathematically correct temperature, TensorFlow's calibrated test ECE (0.0097) is higher than PyTorch's (0.0042). NLL and ECE are different objectives: minimizing one does not guarantee minimizing the other.
+
 ## Robustness
 
 | Corruption | Sev 1 | Sev 3 | Sev 5 |
