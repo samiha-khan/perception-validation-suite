@@ -10,7 +10,7 @@ on:
 jobs:
   eval:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,10 +32,31 @@ jobs:
       # The fine-tuned checkpoint is committed to the repo (models/checkpoints),
       # so only the datasets need caching here.
       - name: Cache datasets
+        id: cache-datasets
         uses: actions/cache@v4
         with:
           path: data
           key: gtsrb-${{ hashFiles('models/**/*.py', 'config.yaml') }}
+
+      # GTSRB/CIFAR-10 normally download from sid.erda.dk / cs.toronto.edu,
+      # which are heavily throttled for GitHub-hosted runner IPs (~60x slower
+      # than a normal connection). Restore the same files, byte-for-byte
+      # (md5-verified), from a release mirror in this repo instead. Placing
+      # them where torchvision expects makes its own download() calls skip
+      # the network fetch and just extract locally.
+      - name: Restore dataset mirror from release
+        if: steps.cache-datasets.outputs.cache-hit != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p data/gtsrb /tmp/dataset-mirror
+          gh release download dataset-mirror-v1 \
+            --repo ${{ github.repository }} \
+            --dir /tmp/dataset-mirror --clobber
+          mv /tmp/dataset-mirror/GTSRB-Training_fixed.zip data/gtsrb/
+          mv /tmp/dataset-mirror/GTSRB_Final_Test_Images.zip data/gtsrb/
+          mv /tmp/dataset-mirror/GTSRB_Final_Test_GT.zip data/gtsrb/
+          mv /tmp/dataset-mirror/cifar-10-python.tar.gz data/
 
       - name: Run eval suite (OOD, calibration, robustness, gate)
         run: python -m ci.run_eval_suite
