@@ -10,7 +10,7 @@ on:
 jobs:
   eval:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,14 +29,12 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # Datasets + the fine-tuned checkpoint are expensive to (re)build, so
-      # they're cached and only rebuilt when model code or config changes.
-      - name: Cache datasets and model checkpoint
+      # The fine-tuned checkpoint is committed to the repo (models/checkpoints),
+      # so only the datasets need caching here.
+      - name: Cache datasets
         uses: actions/cache@v4
         with:
-          path: |
-            data
-            models/checkpoints
+          path: data
           key: gtsrb-${{ hashFiles('models/**/*.py', 'config.yaml') }}
 
       - name: Run eval suite (OOD, calibration, robustness, gate)
