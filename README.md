@@ -56,6 +56,16 @@ Despite finding the mathematically correct temperature, TensorFlow's calibrated 
 
 Clean accuracy is 98.39%. Noise hurts most, corrupts low-level features the model relies on. Motion blur barely matters, traffic signs are shape/color-robust to it. Fog holds up until severity 5, then collapses.
 
+## Monitoring
+
+monitoring/run_monitoring.py simulates a stream of production batches from the GTSRB test set: the first batches are unmodified, then a corruption reused from robustness/corruptions.py (gaussian noise) is blended in with linearly increasing weight through the rest of the stream. Each batch's softmax-entropy distribution is compared against the val split's distribution with a two-sample KS test.
+
+KS chosen over population stability index (PSI): PSI bins the reference distribution into deciles and compares bin proportions, which gets noisy once each bin holds only a handful of points. The KS test compares empirical CDFs directly, no binning needed.
+
+At batch_size=64 the KS statistic was too noisy to separate cleanly from a real baseline gap between the val and test splits, the same train/test non-exchangeability noted above, and flagged several clean batches. Tuned to batch_size=500, which narrows the clean baseline to 0.18-0.22, well under the 0.25 threshold.
+
+Real run: drift blended in starting batch 8, first flagged batch 10. KS statistic: 0.19 (batch 8) -> 0.21 (batch 9) -> 0.28 (batch 10, flagged) -> 0.75 (batch 24).
+
 ## CI gate
 
 GitHub Actions runs OOD, calibration, and robustness checks on every push:
@@ -65,7 +75,7 @@ GitHub Actions runs OOD, calibration, and robustness checks on every push:
 
 Current run fails on the coverage check (gap 0.1811), correctly blocking the build. OOD and ECE both pass. This is the gate working as intended, catching a real issue an accuracy-only check would miss.
 
-47 tests cover the harness logic itself (config loading, detector math, calibration and conformal correctness, report generation), run via pytest on every push alongside the eval suite.
+56 tests cover the harness logic itself (config loading, detector math, calibration and conformal correctness, report generation), run via pytest on every push alongside the eval suite.
 
 ## Report
 
