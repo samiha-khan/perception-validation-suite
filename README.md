@@ -91,6 +91,7 @@ models/       resnet18 fine-tuning, checkpoint, config
 ood/          entropy and mahalanobis detectors
 calibration/  temperature scaling, split conformal, class-conditional check
 robustness/   corruption suite
+monitoring/   production drift simulation and detection
 ci/           eval gate
 reports/      html report generator
 tests/        pytest suite
@@ -105,6 +106,7 @@ python -m models.train
 python -m ood.benchmark
 python -m calibration.run_calibration
 python -m robustness.run_robustness
+python -m monitoring.run_monitoring
 python -m ci.eval_gate
 python -m reports.generate_report
 ```
