@@ -46,5 +46,17 @@ thresholds:
   ece_max: 0.05                # max post-calibration ECE to pass CI gate
   conformal_coverage_tolerance: 0.05   # |empirical - target| coverage tolerance
 
+monitoring:
+  results_dir: monitoring/results
+  results_file: monitoring/results/drift_log.json
+  plot_file: monitoring/results/drift_plot.png
+  num_batches: 25
+  batch_size: 500               # large enough that the KS statistic's sampling
+                                 # noise on clean batches stays in a tight band
+  clean_batches: 8               # batches 0..clean_batches-1 are unmodified
+  drift_corruption: gaussian_noise
+  drift_severity: 5              # corruption strength blended in once drift starts
+  drift_ks_threshold: 0.25       # above the clean baseline band (~0.18-0.22)
+
 reports:
   output_file: reports/output/report.html

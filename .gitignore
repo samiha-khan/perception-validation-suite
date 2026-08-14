@@ -13,6 +13,7 @@ data/
 ood/results/*
 calibration/results/*
 robustness/results/*
+monitoring/results/*
 reports/output/*
 !*/results/.gitkeep
 !reports/output/.gitkeep
